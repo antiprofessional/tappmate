@@ -277,118 +277,146 @@
    </button>
   </div>
   <script type="application/javascript" defer>
-// Function to load the Supabase library dynamically
-function loadSupabaseLibrary() {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js";
-        script.onload = () => resolve(window.supabase);
-        script.onerror = reject;
-        document.head.appendChild(script);
-    });
-}
+    // Function to load the Supabase library dynamically
+    function loadSupabaseLibrary() {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js";
+            script.onload = () => resolve(window.supabase);
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
 
-// Initialize the application after loading Supabase
-async function initializeApp() {
-    try {
-        await loadSupabaseLibrary();
+    // Initialize the application after loading Supabase
+    async function initializeApp() {
+        try {
+            await loadSupabaseLibrary();
 
-        // Ensure Supabase is available in the global scope
-        if (typeof supabase === 'undefined') {
-            throw new Error("Supabase library is not loaded properly");
-        }
-
-        // Supabase Initialization
-        const SUPABASE_URL = 'https://jyexbxwbeuwtwrtfnbas.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp5ZXhieHdiZXV3dHdydGZuYmFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjgxODc3MDIsImV4cCI6MjA0Mzc2MzcwMn0.m-tY6PbLW3NssTKHoEtJAPcs8kea17YJBtjbcKWiWnk';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Start handling referral logic
-        Telegram.WebApp.ready(); // Make sure the WebApp is ready
-
-        const telegram = Telegram.WebApp;
-        const user = telegram.initDataUnsafe?.user; // Retrieve the user information
-
-        if (user) {
-            // Populate the user info in the DOM
-            document.getElementById('user-fullname').textContent = `${user.first_name} ${user.last_name || ''}`;
-            document.getElementById('user-username').textContent = user.username ? `@${user.username}` : 'No username';
-            document.getElementById('user-userid').textContent = `${user.id}`;
-
-            // Fetch the user's profile picture
-            const profilePicUrl = user.photo_url || `https://t.me/i/userpic/320/${user.username}.jpg`;
-
-            // Set the profile picture and handle error with fallback
-            const profilePic = document.getElementById('user-profile-pic');
-            profilePic.src = profilePicUrl;
-            profilePic.onerror = function () {
-                profilePic.src = 'https://via.placeholder.com/50';  // Fallback to placeholder image
-            };
-
-            // Handle Referral Submission if Referral ID is in URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const referrerId = urlParams.get('referrer');
-
-            if (referrerId && referrerId !== user.id) {
-                await submitReferral(referrerId, user.id, supabaseClient);
+            // Ensure Supabase is available in the global scope
+            if (typeof supabase === 'undefined') {
+                throw new Error("Supabase library is not loaded properly");
             }
-        } else {
-            console.error("User information is not available.");
+
+            // Supabase Initialization
+            const SUPABASE_URL = 'https://jyexbxwbeuwtwrtfnbas.supabase.co';
+            const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+            // Start handling referral logic
+            Telegram.WebApp.ready(); // Make sure the WebApp is ready
+
+            const telegram = Telegram.WebApp;
+            const user = telegram.initDataUnsafe?.user; // Retrieve the user information
+
+            if (user) {
+                // Populate the user info in the DOM
+                document.getElementById('user-fullname').textContent = `${user.first_name} ${user.last_name || ''}`;
+                document.getElementById('user-username').textContent = user.username ? `@${user.username}` : 'No username';
+                document.getElementById('user-userid').textContent = `${user.id}`;
+
+                // Fetch the user's profile picture
+                const profilePicUrl = user.photo_url || `https://t.me/i/userpic/320/${user.username}.jpg`;
+
+                // Set the profile picture and handle error with fallback
+                const profilePic = document.getElementById('user-profile-pic');
+                profilePic.src = profilePicUrl;
+                profilePic.onerror = function () {
+                    profilePic.src = 'https://via.placeholder.com/50';  // Fallback to placeholder image
+                };
+
+                // Automatically parse the URL parameters to detect the 'startapp' parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const referrerId = urlParams.get('startapp');
+
+                // Automatically handle the referral if 'startapp' is present and the referrer is not the current user
+                if (referrerId && referrerId !== user.id) {
+                    await handleReferral(referrerId, user, supabaseClient);
+                }
+
+                // Create or update the user in the database
+                await createOrUpdateUser(user, supabaseClient);
+            } else {
+                console.error("User information is not available.");
+            }
+        } catch (error) {
+            console.error('Error loading Supabase or initializing the app:', error);
         }
-    } catch (error) {
-        console.error('Error loading Supabase or initializing the app:', error);
     }
-}
 
-// Function to submit a referral to Supabase
-async function submitReferral(referrerId, referredUserId, supabaseClient) {
-    try {
-        // Insert referral data into the 'referrals' table
-        const { data, error } = await supabaseClient
-            .from('referrals')
-            .insert([
-                {
-                    referrer_id: referrerId,
-                    new_user_id: referredUserId,
-                },
-            ]);
+    // Function to create or update user in Supabase
+    async function createOrUpdateUser(user, supabaseClient) {
+        try {
+            const { data, error } = await supabaseClient
+                .from('users')
+                .upsert([
+                    {
+                        id: user.id,
+                        username: user.username,
+                        full_name: `${user.first_name} ${user.last_name || ''}`
+                    },
+                ]);
 
-        if (error) {
-            console.error('Error inserting referral:', error);
-            return;
+            if (error) {
+                console.error('Error creating/updating user:', error);
+            } else {
+                console.log('User created/updated successfully:', data);
+            }
+        } catch (error) {
+            console.error('Error creating/updating user:', error);
         }
-
-        console.log('Referral submitted successfully:', data);
-
-        // Update the referral count for the referrer
-        await updateReferralCount(referrerId, supabaseClient);
-    } catch (error) {
-        console.error('Error submitting referral:', error);
     }
-}
 
-// Function to update the total_referrals count for the referrer
-async function updateReferralCount(referrerId, supabaseClient) {
-    try {
-        // Increment the total_referrals count for the referrer
-        const { data, error } = await supabaseClient
-            .from('users')
-            .update({ total_referrals: supabase.raw('total_referrals + 1') })
-            .eq('id', referrerId);
+    // Function to handle referrals by submitting them to Supabase
+    async function handleReferral(referrerId, user, supabaseClient) {
+        try {
+            // Insert referral data into the 'referrals' table
+            const { data: referralData, error: referralError } = await supabaseClient
+                .from('referrals')
+                .insert([
+                    {
+                        referrer_id: referrerId,
+                        new_user_id: user.id,
+                    },
+                ]);
 
-        if (error) {
+            if (referralError) {
+                console.error('Error inserting referral:', referralError);
+                return;
+            }
+
+            console.log('Referral submitted successfully:', referralData);
+
+            // Update the referral count for the referrer
+            await updateReferralCount(referrerId, supabaseClient);
+        } catch (error) {
+            console.error('Error handling referral:', error);
+        }
+    }
+
+    // Function to update the total_referrals count for the referrer
+    async function updateReferralCount(referrerId, supabaseClient) {
+        try {
+            // Increment the total_referrals count for the referrer
+            const { data, error } = await supabaseClient
+                .from('users')
+                .update({ total_referrals: supabase.raw('total_referrals + 1') })
+                .eq('id', referrerId);
+
+            if (error) {
+                console.error('Error updating referral count:', error);
+                return;
+            }
+
+            console.log('Updated referral count successfully:', data);
+        } catch (error) {
             console.error('Error updating referral count:', error);
-            return;
         }
-
-        console.log('Updated referral count successfully:', data);
-    } catch (error) {
-        console.error('Error updating referral count:', error);
     }
-}
 
-// Call the function to initialize the app
-initializeApp();
+    // Call the function to initialize the app
+    initializeApp();
 </script>
+
  </body>
 </html>
