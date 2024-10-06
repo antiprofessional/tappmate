@@ -1,0 +1,16 @@
+{
+  "name": "TONMATES WebApp",
+  "short_name": "TONMATES",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "A Telegram WebApp for managing referrals and rewards.",
+  "icons": [
+    {
+      "src": "img/logoicon.png",
+      "type": "image/png",
+      "sizes": "300x40"
+    }
+  ]
+}

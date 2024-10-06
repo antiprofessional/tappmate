@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="MobileOptimized" content="176" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="robots" content="noindex,nofollow" />
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        // Function to set the theme class
+        function setThemeClass() {
+            document.documentElement.className = Telegram.WebApp.colorScheme;
+        }
+
+        Telegram.WebApp.onEvent('themeChanged', setThemeClass);
+        setThemeClass();
+
+        // Initialize the Telegram WebApp and get user data
+        window.onload = function() {
+            Telegram.WebApp.ready(); // Make sure the WebApp is ready
+
+            const telegram = Telegram.WebApp;
+            const user = telegram.initDataUnsafe?.user; // Retrieve the user information
+
+            if (user) {
+                // Populate the user info in the DOM
+                document.getElementById('user-fullname').textContent = `${user.first_name} ${user.last_name || ''}`;
+                document.getElementById('user-username').textContent = user.username ? `@${user.username}` : 'No username';
+                document.getElementById('user-userid').textContent = `${user.id}`;
+
+                // Fetch the user's profile picture
+                const profilePicUrl = user.photo_url || `https://t.me/i/userpic/320/${user.username}.jpg`;
+
+                // Set the profile picture and handle error with fallback
+                const profilePic = document.getElementById('user-profile-pic');
+                profilePic.src = profilePicUrl;
+                profilePic.onerror = function() {
+                    profilePic.src = 'https://via.placeholder.com/50';  // Fallback to placeholder image
+                };
+            } else {
+                console.error("User information is not available.");
+            }
+        };
+
+        // Section switching logic
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            document.querySelectorAll('.footer-nav button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.getElementById(`btn-${sectionId}`).classList.add('active');
+        }
+
+        // Function to show or hide invite options
+        function showInviteOptions() {
+            const inviteOptions = document.getElementById('invite-options');
+            inviteOptions.style.display = inviteOptions.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Function to copy invite link
+        function copyInviteLink() {
+            const telegram = Telegram.WebApp;
+            const user = telegram.initDataUnsafe?.user;
+            if (user) {
+                const referralLink = `https://t.me/tappmatebot?startapp=${user.id}`;
+                navigator.clipboard.writeText(referralLink).then(() => {
+                    showTelegramAlert('Referral link copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy the link: ', err);
+                });
+            } else {
+                console.error('User information is not available.');
+            }
+        }
+
+        // Show Telegram alerts or fallback to a default alert
+        function showTelegramAlert(message) {
+            Telegram.WebApp.showAlert ? Telegram.WebApp.showAlert(message) : alert(message);
+        }
+
+        // Share the referral link on Telegram
+        function shareOnTelegram() {
+            const telegram = Telegram.WebApp;
+            const user = telegram.initDataUnsafe?.user;
+            if (user) {
+                const referralLink = `https://t.me/tappmatebot?startapp=${user.id}`;
+                const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join me for rewards!')}`;
+                window.open(telegramShareUrl, '_blank');
+            } else {
+                console.error('User information is not available.');
+            }
+        }
+    </script>
+    <title>TONMATES</title>
+    <link rel="icon" type="icon" sizes="32x32" href="img/JsFqEpU.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        header {
+            background-color: var(--tg-theme-bg-color, black);
+padding: 10px;
+text-align: center;
+color: var(--tg-theme-text-color, black);
+font-weight: bold;
+font-size: 16px;
+letter-spacing: 1px;
+border-bottom: 1px solid var(--tg-theme-hint-color, black);
+}
+
+        body {
+            background-color: var(--tg-theme-bg-color, #000);
+            color: var(--tg-theme-text-color, #fff);
+            font-family: 'Inter', sans-serif;
+        }
+        h2 {
+            color: var(--tg-theme-text-color, #fff);
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 35px;
+        }
+        .container {
+            padding: 2rem;
+            transition: filter 0.3s ease;
+        }
+        .claim-button, .invite-button {
+            background: var(--tg-theme-button-color, #ffffff);
+            border-radius: 5px;
+            border: 1px solid var(--tg-theme-hint-color, #dcdcdc);
+            cursor: pointer;
+            color: var(--tg-theme-button-text-color, #000);
+            font-family: Arial;
+            font-size: 15px;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 10px 30px;
+        }
+        .claim-button {
+            padding: 10px 100px;
+        }
+
+        .section {
+            display: none;
+        }
+        .section.active {
+            display: block;
+        }
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: var(--tg-theme-secondary-bg-color, #000);
+            display: flex;
+            justify-content: space-around;
+            padding: 5px;
+            border-top: 1px solid var(--tg-theme-hint-color, #333);
+        }
+
+        .footer-nav button {
+            background: none;
+            border: none;
+            color: var(--tg-theme-text-color, white);
+            font-size: 14px;
+            font-weight: bolder;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .footer-nav button:hover {
+            color: var(--tg-theme-link-color, #fff);
+        }
+        .footer-nav button img {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+        }
+        .footer-nav button.active {
+            color: var(--tg-theme-link-color, #7ba69f);
+        }
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        .mine {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+        .user-info img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <img src="img/logoicon.png" alt="icon" style="width: 300px; height: 40px;" />
+</header>
+<div class="container">
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="section active">
+        <h2>DASHBOARD</h2>
+        <div class="user-info">
+            <img id="user-profile-pic" src="https://via.placeholder.com/100" alt="Profile Picture" />
+            <p>Name: <span id="user-fullname">Loading...</span></p>
+            <p>Username: <span  id="user-username">Loading...</span></p>
+            <p>UID: <span  id="user-userid">Loading...</span></p>
+        </div>
+    </div>
+
+    <!-- Mates Section -->
+    <div id="mates" class="section">
+        <h2>MATES</h2>
+        <p><b>Total Mates:</b> <span id="total-mates">0</span></p>
+        <div id="referrals-list"></div>
+
+        <!-- Invite Button Section -->
+        <br><button class="invite-button" onclick="showInviteOptions()">Invite</button>
+
+        <!-- Invite Options -->
+        <div id="invite-options" class="invite-section" style="display: none;">
+            <!-- Copy Invite Link Button -->
+            <br><button class="invite-button" onclick="copyInviteLink()">Copy Invite Link</button><br>
+
+            <!-- Send via Telegram Button -->
+            <br><button class="invite-button" onclick="shareOnTelegram()">Send via Telegram</button>
+        </div>
+    </div>
+
+    <!-- Withdraw Section -->
+    <div id="withdraw" class="section">
+        <h2>WITHDRAW</h2>
+        <div style="text-align: center; margin-bottom:10px">
+            <img src="img/GJeAZhN.png" alt="Withdraw Icon" style="max-width: 100%; height: auto;">
+        </div>
+        <p style="font-weight: bolder;">TOTAL PROFITS: <img src="img/A5gXrND.png" alt="TON" style="width: 11px; height: 11px;" /><strong id="reward-amount"> 0</strong></p><br>
+        <button onclick="showTelegramAlert('You need at least 50 referrals to proceed a withdrawal')" class="claim-button">Withdraw</button>
+    </div>
+</div>
+
+<!-- Footer Navigation Bar -->
+<div class="footer-nav">
+    <button id="btn-dashboard" class="active" onclick="showSection('dashboard')">
+        <img src="img/sYgdoXl.png" alt="Home Icon">
+        <span>DASHBOARD</span>
+    </button>
+    <button id="btn-mates" onclick="showSection('mates')">
+        <img src="img/TDY9RV4.png" alt="Mates Icon">
+        <span>REFERRAL</span>
+    </button>
+    <button id="btn-withdraw" onclick="showSection('withdraw')">
+        <img src="img/5SBfSy8.png" alt="Withdraw Icon">
+        <span>WITHDRAW</span>
+    </button>
+</div>
+
+</body>
+</html>
