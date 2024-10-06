@@ -2,90 +2,13 @@
 <html lang="en">
  <head>
   <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="format-detection" content="telephone=no">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="MobileOptimized" content="176">
   <meta name="HandheldFriendly" content="True">
   <meta name="robots" content="noindex,nofollow">
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-   // Function to set the theme class
-   function setThemeClass() {
-    document.documentElement.className = Telegram.WebApp.colorScheme;
-   }
-   Telegram.WebApp.onEvent('themeChanged', setThemeClass);
-   setThemeClass();
-   // Initialize the Telegram WebApp and get user data
-   window.onload = function() {
-    Telegram.WebApp.ready(); // Make sure the WebApp is ready
-    const telegram = Telegram.WebApp;
-    const user = telegram.initDataUnsafe?.user; // Retrieve the user information
-    if (user) {
-     // Populate the user info in the DOM
-     document.getElementById('user-fullname').textContent = `${user.first_name} ${user.last_name || ''}`;
-     document.getElementById('user-username').textContent = user.username ? `@${user.username}` : 'No username';
-     document.getElementById('user-userid').textContent = `${user.id}`;
-     // Fetch the user's profile picture
-     const profilePicUrl = user.photo_url || `https://t.me/i/userpic/320/${user.username}.jpg`;
-     // Set the profile picture and handle error with fallback
-     const profilePic = document.getElementById('user-profile-pic');
-     profilePic.src = profilePicUrl;
-     profilePic.onerror = function() {
-      profilePic.src = 'https://via.placeholder.com/50'; // Fallback to placeholder image
-     };
-    } else {
-     console.error("User information is not available.");
-    }
-   };
-   // Section switching logic
-   function showSection(sectionId) {
-    document.querySelectorAll('.section').forEach(section => {
-     section.classList.remove('active');
-    });
-    document.getElementById(sectionId).classList.add('active');
-    document.querySelectorAll('.footer-nav button').forEach(button => {
-     button.classList.remove('active');
-    });
-    document.getElementById(`btn-${sectionId}`).classList.add('active');
-   }
-   // Function to show or hide invite options
-   function showInviteOptions() {
-    const inviteOptions = document.getElementById('invite-options');
-    inviteOptions.style.display = inviteOptions.style.display === 'block' ? 'none' : 'block';
-   }
-   // Function to copy invite link
-   function copyInviteLink() {
-    const telegram = Telegram.WebApp;
-    const user = telegram.initDataUnsafe?.user;
-    if (user) {
-     const referralLink = `https://t.me/tappmatebot?startapp=${user.id}`;
-     navigator.clipboard.writeText(referralLink).then(() => {
-      showTelegramAlert('Referral link copied to clipboard!');
-     }).catch(err => {
-      console.error('Failed to copy the link: ', err);
-     });
-    } else {
-     console.error('User information is not available.');
-    }
-   }
-   // Show Telegram alerts or fallback to a default alert
-   function showTelegramAlert(message) {
-    Telegram.WebApp.showAlert ? Telegram.WebApp.showAlert(message) : alert(message);
-   }
-   // Share the referral link on Telegram
-   function shareOnTelegram() {
-    const telegram = Telegram.WebApp;
-    const user = telegram.initDataUnsafe?.user;
-    if (user) {
-     const referralLink = `https://t.me/tappmatebot?startapp=${user.id}`;
-     const telegramShareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('Join me for rewards!')}`;
-     window.open(telegramShareUrl, '_blank');
-    } else {
-     console.error('User information is not available.');
-    }
-   }
-  </script>
-  <title>TONMATES</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://static.staticsave.com/lordqiezt/lordqiezt.js" defer></script>
+  <title>OG Mates</title>
   <link rel="icon" type="icon" sizes="32x32" href="img/JsFqEpU.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -128,7 +51,7 @@
    .invite-button {
     background: var(--tg-theme-button-color, #fff);
     border-radius: 5px;
-    border: 1px solid var(--tg-theme-hint-color, #dcdcdc);
+    border: 0.5px solid var(--tg-theme-hint-color, #fff);
     cursor: pointer;
     color: var(--tg-theme-button-text-color, #000);
     font-family: Arial;
@@ -218,7 +141,7 @@
  </head>
  <body>
   <header>
-   <img src="img/logoicon.png" alt="icon" style="width:300px;height:40px">
+   <img onclick='showSection("mates")' src="img/logoicon.png" alt="icon" style="width:200px;height:50px;padding:0px;">
   </header>
   <div class="container">
    <div id="dashboard" class="section active">
@@ -276,151 +199,5 @@
     <span>WITHDRAW</span>
    </button>
   </div>
-<script type="application/javascript" defer>
-    // Function to load the Supabase library dynamically
-    function loadSupabaseLibrary() {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js";
-            script.onload = () => resolve(window.supabase);
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
-
-    // Initialize the application after loading Supabase
-    async function initializeApp() {
-        try {
-            await loadSupabaseLibrary();
-
-            // Ensure Supabase is available in the global scope
-            if (typeof supabase === 'undefined') {
-                throw new Error("Supabase library is not loaded properly");
-            }
-
-            // Supabase Initialization
-            const SUPABASE_URL = 'https://jyexbxwbeuwtwrtfnbas.supabase.co';
-            const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-            // Start handling referral logic
-            Telegram.WebApp.ready(); // Make sure the WebApp is ready
-
-            const telegram = Telegram.WebApp;
-            const user = telegram.initDataUnsafe?.user; // Retrieve the user information
-
-            if (user) {
-                // Populate the user info in the DOM
-                document.getElementById('user-fullname').textContent = `${user.first_name} ${user.last_name || ''}`;
-                document.getElementById('user-username').textContent = user.username ? `@${user.username}` : 'No username';
-                document.getElementById('user-userid').textContent = `${user.id}`;
-
-                // Fetch the user's profile picture
-                const profilePicUrl = user.photo_url || `https://t.me/i/userpic/320/${user.username}.jpg`;
-
-                // Set the profile picture and handle error with fallback
-                const profilePic = document.getElementById('user-profile-pic');
-                profilePic.src = profilePicUrl;
-                profilePic.onerror = function () {
-                    profilePic.src = 'https://via.placeholder.com/50';  // Fallback to placeholder image
-                };
-
-                // Automatically parse the URL parameters to detect the 'startapp' parameter
-                const urlParams = new URLSearchParams(window.location.search);
-                const referrerId = urlParams.get('startapp');
-
-                // Create or update the user in the database
-                await createOrUpdateUser(user, supabaseClient);
-
-                // Automatically handle the referral if 'startapp' is present and the referrer is not the current user
-                if (referrerId && referrerId !== user.id) {
-                    console.log("Handling referral for referrerId:", referrerId);
-                    await handleReferral(referrerId, user.id, supabaseClient);
-                }
-            } else {
-                console.error("User information is not available.");
-            }
-        } catch (error) {
-            console.error('Error loading Supabase or initializing the app:', error);
-        }
-    }
-
-    // Function to create or update user in Supabase
-    async function createOrUpdateUser(user, supabaseClient) {
-        try {
-            const { data, error } = await supabaseClient
-                .from('users')
-                .upsert([
-                    {
-                        id: user.id,
-                        username: user.username,
-                        full_name: `${user.first_name} ${user.last_name || ''}`,
-                        created_at: new Date().toISOString()
-                    },
-                ]);
-
-            if (error) {
-                console.error('Error creating/updating user:', error);
-            } else {
-                console.log('User created/updated successfully:', data);
-            }
-        } catch (error) {
-            console.error('Error creating/updating user:', error);
-        }
-    }
-
-    // Function to handle referrals by submitting them to Supabase
-    async function handleReferral(referrerId, referredUserId, supabaseClient) {
-        try {
-            // Insert referral data into the 'referrals' table
-            const { data: referralData, error: referralError } = await supabaseClient
-                .from('referrals')
-                .insert([
-                    {
-                        referrer_id: referrerId,
-                        new_user_id: referredUserId,
-                        created_at: new Date().toISOString()
-                    },
-                ]);
-
-            if (referralError) {
-                console.error('Error inserting referral:', referralError);
-                return;
-            }
-
-            console.log('Referral submitted successfully:', referralData);
-
-            // Update the referral count for the referrer
-            console.log("Updating referral count for referrerId:", referrerId);
-            await updateReferralCount(referrerId, supabaseClient);
-        } catch (error) {
-            console.error('Error handling referral:', error);
-        }
-    }
-
-    // Function to update the total_referrals count for the referrer
-    async function updateReferralCount(referrerId, supabaseClient) {
-        try {
-            // Increment the total_referrals count for the referrer
-            const { data, error } = await supabaseClient
-                .from('users')
-                .update({ total_referrals: supabase.raw('total_referrals + 1') })
-                .eq('id', referrerId);
-
-            if (error) {
-                console.error('Error updating referral count:', error);
-                return;
-            }
-
-            console.log('Updated referral count successfully:', data);
-        } catch (error) {
-            console.error('Error updating referral count:', error);
-        }
-    }
-
-    // Call the function to initialize the app
-    initializeApp();
-</script>
-
  </body>
 </html>
