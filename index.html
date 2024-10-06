@@ -276,7 +276,7 @@
     <span>WITHDRAW</span>
    </button>
   </div>
-  <script type="application/javascript" defer>
+<script type="application/javascript" defer>
     // Function to load the Supabase library dynamically
     function loadSupabaseLibrary() {
         return new Promise((resolve, reject) => {
@@ -329,13 +329,14 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const referrerId = urlParams.get('startapp');
 
-                // Automatically handle the referral if 'startapp' is present and the referrer is not the current user
-                if (referrerId && referrerId !== user.id) {
-                    await handleReferral(referrerId, user, supabaseClient);
-                }
-
                 // Create or update the user in the database
                 await createOrUpdateUser(user, supabaseClient);
+
+                // Automatically handle the referral if 'startapp' is present and the referrer is not the current user
+                if (referrerId && referrerId !== user.id) {
+                    console.log("Handling referral for referrerId:", referrerId);
+                    await handleReferral(referrerId, user.id, supabaseClient);
+                }
             } else {
                 console.error("User information is not available.");
             }
@@ -353,7 +354,8 @@
                     {
                         id: user.id,
                         username: user.username,
-                        full_name: `${user.first_name} ${user.last_name || ''}`
+                        full_name: `${user.first_name} ${user.last_name || ''}`,
+                        created_at: new Date().toISOString()
                     },
                 ]);
 
@@ -368,7 +370,7 @@
     }
 
     // Function to handle referrals by submitting them to Supabase
-    async function handleReferral(referrerId, user, supabaseClient) {
+    async function handleReferral(referrerId, referredUserId, supabaseClient) {
         try {
             // Insert referral data into the 'referrals' table
             const { data: referralData, error: referralError } = await supabaseClient
@@ -376,7 +378,8 @@
                 .insert([
                     {
                         referrer_id: referrerId,
-                        new_user_id: user.id,
+                        new_user_id: referredUserId,
+                        created_at: new Date().toISOString()
                     },
                 ]);
 
@@ -388,6 +391,7 @@
             console.log('Referral submitted successfully:', referralData);
 
             // Update the referral count for the referrer
+            console.log("Updating referral count for referrerId:", referrerId);
             await updateReferralCount(referrerId, supabaseClient);
         } catch (error) {
             console.error('Error handling referral:', error);
